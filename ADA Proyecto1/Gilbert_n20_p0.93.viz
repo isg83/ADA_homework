@@ -1,0 +1,26 @@
+Digraph G {
+	N0->N16	[arrowhead=none];
+	N18->N4	[arrowhead=none];
+	N10->N0	[arrowhead=none];
+	N2->N3	[arrowhead=none];
+	N11->N17	[arrowhead=none];
+	N11->N1	[arrowhead=none];
+	N3->N14	[arrowhead=none];
+	N7->N11	[arrowhead=none];
+	N1->N2	[arrowhead=none];
+	N8->N16	[arrowhead=none];
+	N16->N5	[arrowhead=none];
+	N11->N4	[arrowhead=none];
+	N13->N5	[arrowhead=none];
+	N3->N16	[arrowhead=none];
+	N10->N1	[arrowhead=none];
+	N3->N2	[arrowhead=none];
+	N12->N15	[arrowhead=none];
+	N5->N6	[arrowhead=none];
+	N11->N18	[arrowhead=none];
+	N2->N1	[arrowhead=none];
+	N19->N9	[arrowhead=none];
+	N7->N14	[arrowhead=none];
+	N6->N9	[arrowhead=none];
+	N7->N1	[arrowhead=none];
+}
