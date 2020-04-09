@@ -1,4 +1,5 @@
 import java.util.*;
+//import sun.misc.Queue;
 import java.io.*;
 import java.nio.file.DirectoryIteratorException;
 
@@ -37,6 +38,7 @@ public class Graph{
     int edgs = m;
     int N_i;
     int N_f;
+    int w;
     // int num_nod=Nodes.size();
     // variable donde guardamos el objeto de la clase HashMap
     // creado por el metodo node que guarda los nodos
@@ -53,24 +55,26 @@ public class Graph{
       // condición para evitar repeticiones en lista de aristas
       if (G_ErdosRenyi.containsKey("N" + N_i + "->N" + N_f)) { } 
       else {
+        double w_d=50*Math.random()+1;
+        w=(int) w_d;
         if (dir) {
-          if (Auto && (N_i == N_f)) {
-            G_ErdosRenyi.put("N" + N_i + "->N" + N_f, i);
-            System.out.println(N_i + "->" + N_f);
+          if (Auto && (N_i == N_f)) {            
+            G_ErdosRenyi.put("N" + N_i + "->N" + N_f, w);
+            //System.out.println(N_i + "->" + N_f);
           }
           if (!Auto && N_i != N_f) {
-            G_ErdosRenyi.put("N" + N_i + "->N" + N_f, i);
-            System.out.println(N_i + "->" + N_f);
+            G_ErdosRenyi.put("N" + N_i + "->N" + N_f, w);
+            //System.out.println(N_i + "->" + N_f);
           }
         }
         if (!dir && !G_ErdosRenyi.containsKey("N" + N_f + "--N" + N_i)) {
           if (Auto && (N_i == N_f)) {
-            G_ErdosRenyi.put("N" + N_i + "--N" + N_f , i);
-            System.out.println(N_i + "--" + N_f);
+            G_ErdosRenyi.put("N" + N_i + "--N" + N_f , w);
+            //System.out.println(N_i + "--" + N_f);
           }
           if (!Auto && N_i != N_f) {
-            G_ErdosRenyi.put("N" + N_i + "--N" + N_f , i);
-            System.out.println(N_i + "--" + N_f);
+            G_ErdosRenyi.put("N" + N_i + "--N" + N_f , w);
+            //System.out.println(N_i + "--" + N_f);
           }
         }
       }
@@ -83,44 +87,44 @@ public class Graph{
   // metodo Gilbert para generacion de m aristas para cada par del conjunto de
   // nodos con probabilidad System.out.print();
 
-  public static HashMap<String, Integer> genGilbert(final int n, final int m, final double p, final Boolean d,
-      final Boolean a) {
-    final HashMap<String, Integer> G_Gilbert = new HashMap<String, Integer>();
+  public static HashMap<String, Integer> genGilbert(int n, int m, double p, Boolean d, Boolean a) {
+    HashMap<String, Integer> G_Gilbert = new HashMap<String, Integer>();
     HashMap<String, Double> Nodos_glbr = new HashMap<String, Double>();
     Nodos_glbr = node(n);
     // variables locales
-    final int num_nod = Nodos_glbr.size();
-    final int edgs = m;
-    final double prbl = p;
-    final Boolean dir = d;
-    final Boolean Auto = a;
-    int edgs_cnt = 0;
+    int num_nod = Nodos_glbr.size();
+    int edgs = m;
+    double prbl = p;
+    Boolean dir = d;
+    Boolean Auto = a;
+    //int edgs_wght = 1;
     // ciclos para recorrer todas las parejas posibles de nodos y asignar arista
     // si numero aleatorio es superior a p
     for (int i = 0; i < num_nod; i++) {
       for (int j = 0; j < num_nod; j++) {
         if (G_Gilbert.containsKey("N" + i + "->N" + j)) { } 
         else {
-          final double rnd = Math.random();
+          double rnd = Math.random();
+          double edgs_wght_d=100*Math.random()+1.0;
+          int edgs_wght=(int) edgs_wght_d;
           if (rnd > prbl) {
             if (dir) {
               if (Auto && i == j) {
-                G_Gilbert.put("N" + i + "->N" + j, edgs_cnt);
+                G_Gilbert.put("N" + i + "->N" + j, edgs_wght);
               }
               if (!Auto && i != j) {
-                G_Gilbert.put("N" + i + "->N" + j, edgs_cnt);
+                G_Gilbert.put("N" + i + "->N" + j, edgs_wght);
               }
             }
             if (!dir && !G_Gilbert.containsKey("N" + j + "--N" + i )) {
               if (Auto && i == j) {
-                G_Gilbert.put("N" + i + "--N" + j , edgs_cnt);
+                G_Gilbert.put("N" + i + "--N" + j , edgs_wght);
               }
               if (!Auto && i != j) {
-                G_Gilbert.put("N" + i + "--N" + j , edgs_cnt);
+                G_Gilbert.put("N" + i + "--N" + j , edgs_wght);
               }
             }
           }
-          edgs_cnt = +edgs_cnt;
         }
       }
     }
@@ -132,23 +136,24 @@ public class Graph{
   // metodo Geografico simple; regresa objeo tipo HashMap con las aristas
   // generadas
   // por la regla de la r vecindad.
-  public static HashMap<String, Integer> genSimpleGeo(final int n, final double r, final Boolean d, final Boolean a) {
-    final HashMap<String, Integer> G_SimpleGeo = new HashMap<String, Integer>();
+  public static HashMap<String, Integer> genSimpleGeo(int n, double r, Boolean d, Boolean a) {
+
+    HashMap<String, Integer> G_SimpleGeo = new HashMap<String, Integer>();
     HashMap<String, Double> N_x = new HashMap<String, Double>();
     HashMap<String, Double> N_y = new HashMap<String, Double>();
 
-    final int N = n;
+    int N = n;
     int edgs_cnt;
-    final double B = r;
+    double B = r;
     double R = 0;
-    final Boolean Auto = a;
-    final Boolean dir = d;
+    Boolean Auto = a;
+    Boolean dir = d;
     N_x = node(N);
     N_y = node(N);
 
     double x1 = 0;
     double x2 = 0;
-    final double y1 = 0;
+    double y1 = 0;
     double y2 = 0;
 
     edgs_cnt = 0;
@@ -161,33 +166,35 @@ public class Graph{
         y2 = N_y.get("N" + j);
         R = Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
         if (R < B) {
-          if (G_SimpleGeo.containsKey("N" + i + "->N" + j)) {
-          } else {
+          if (G_SimpleGeo.containsKey("N" + i + "->N" + j)) { } 
+          else {
+            double edgs_wght_d=100*Math.random()+1.0;
+            int edgs_wght=(int) edgs_wght_d;
             if (dir) {
               if (Auto && i == j) {
-                G_SimpleGeo.put("N" + i + "->N" + j, edgs_cnt);
+                G_SimpleGeo.put("N" + i + "->N" + j, edgs_wght);
               }
               if (!Auto && i != j) {
-                G_SimpleGeo.put("N" + i + "->N" + j, edgs_cnt);
+                G_SimpleGeo.put("N" + i + "->N" + j, edgs_wght);
               }
             }
             if (!dir && !G_SimpleGeo.containsKey("N" + j + "--N" + i)) {
               if (Auto && i == j) {
-                G_SimpleGeo.put("N" + i + "--N" + j , edgs_cnt);
+                G_SimpleGeo.put("N" + i + "--N" + j , edgs_wght);
               }
               if (!Auto && i != j) {
-                G_SimpleGeo.put("N" + i + "--N" + j , edgs_cnt);
+                G_SimpleGeo.put("N" + i + "--N" + j , edgs_wght);
               }
             }
           }
         }
-        edgs_cnt = edgs_cnt + 1;
+        //edgs_cnt = edgs_cnt + 1;
       }
     }
 
     return G_SimpleGeo;
   }
-//arreglar la duplicidad en no dirigidos
+
   // metodo Barabasi Albert; regresa objeto tipo HashMap con las aristas generadas
   // con
   // la probabilidad p=1-deg(nodo)/d.
@@ -220,40 +227,42 @@ public class Graph{
           p = 1.0 - deg_v / (double) D;
           rand = Math.random();
           if (rand < p) {
+            double edgs_wght_d=100*Math.random()+1.0;
+            int edgs_wght=(int) edgs_wght_d;
             if (dir) {
               if (Auto && ("N" + i == "N" + j)) {
-                G_BarabasiAlbert.put("N" + i + "->N" + j, edgs_cnt);
+                G_BarabasiAlbert.put("N" + i + "->N" + j, edgs_wght);
                 double temp_deg = nodos.get("N" + i);
                 nodos.put("N" + i, temp_deg + 1);
                 temp_deg = nodos.get("N" + j);
                 nodos.put("N" + j, temp_deg + 1);
-                edgs_cnt = edgs_cnt + 1;
+                //edgs_cnt = edgs_cnt + 1;
               }
               if (!Auto && ("N" + i != "N" + j)) {
-                G_BarabasiAlbert.put("N" + i + "->N" + j, edgs_cnt);
+                G_BarabasiAlbert.put("N" + i + "->N" + j, edgs_wght);
                 double temp_deg = nodos.get("N" + i);
                 nodos.put("N" + i, temp_deg + 1);
                 temp_deg = nodos.get("N" + j);
                 nodos.put("N" + j, temp_deg + 1);
-                edgs_cnt = edgs_cnt + 1;
+                //edgs_cnt = edgs_cnt + 1;
               }
             }
             if (!dir && !G_BarabasiAlbert.containsKey("N" + j + "--N" + i)) {
               if (Auto && ("N" + i == "N" + j)) {
-                G_BarabasiAlbert.put("N" + i + "--N" + j , edgs_cnt);
+                G_BarabasiAlbert.put("N" + i + "--N" + j , edgs_wght);
                 double temp_deg = nodos.get("N" + i);
                 nodos.put("N" + i, temp_deg + 1);
                 temp_deg = nodos.get("N" + j);
                 nodos.put("N" + j, temp_deg + 1);
-                edgs_cnt = edgs_cnt + 1;
+                //edgs_cnt = edgs_cnt + 1;
               }
               if (!Auto && ("N" + i != "N" + j)) {
-                G_BarabasiAlbert.put("N" + i + "--N" + j , edgs_cnt);
+                G_BarabasiAlbert.put("N" + i + "--N" + j , edgs_wght);
                 double temp_deg = nodos.get("N" + i);    
                 nodos.put("N" + i, temp_deg + 1);
                 temp_deg = nodos.get("N" + j);
                 nodos.put("N" + j, temp_deg + 1);
-                edgs_cnt = edgs_cnt + 1;
+                //edgs_cnt = edgs_cnt + 1;
               }
             }
           }
@@ -279,7 +288,7 @@ public class Graph{
     writer.write("Digraph G {\n");
     Graph_method.forEach((k, v) -> {
       try {
-        writer.write("\t" + k + ";\n");
+        writer.write("\t" + k + "[weight=" + v + "];\n");
       } catch (final IOException e) {
         System.out.println("An error occurred.");
         e.printStackTrace();
@@ -291,7 +300,7 @@ public class Graph{
       writer.write("Graph G {\n");
       Graph_method.forEach((k, v) -> {
         try {
-          writer.write("\t" + k + ";\n");
+          writer.write("\t" + k + "[weight=" + v + "];\n");
         } catch (final IOException e) {
           System.out.println("An error occurred.");
           e.printStackTrace();
@@ -305,6 +314,43 @@ public class Graph{
     writer.close();
   }
 
+   // metodo para guardar la lista generada por los diferentes metodos en archivo
+  // .viz
+  public void toVizDoub(String file_name, Boolean d, Map<String, Double> Graph_method)
+      throws IOException {
+
+    Boolean dir = d;
+    File file = new File(file_name + ".dot");
+    file.createNewFile();
+    FileWriter writer = new FileWriter(file);
+    
+    if(dir){
+    writer.write("Digraph G {\n");
+    Graph_method.forEach((k, v) -> {
+      try {
+        writer.write("\t" + k + "[weight=" + v + "];\n");
+      } catch (final IOException e) {
+        System.out.println("An error occurred.");
+        e.printStackTrace();
+      }
+    });
+    }
+
+    if(!dir){
+      writer.write("Graph G {\n");
+      Graph_method.forEach((k, v) -> {
+        try {
+          writer.write("\t" + k + "[weight=" + v + "];\n");
+        } catch (final IOException e) {
+          System.out.println("An error occurred.");
+          e.printStackTrace();
+        }
+      });
+    }
+    writer.write("}");
+    writer.flush();
+    writer.close();
+  }
 //metodo para separar las llaves de las aristas de cada metodo
 //preservamos el primer nodo
   public String unShambleFirst(String bloody_key){
@@ -361,7 +407,7 @@ if(!Dirigido){
           
           if(map_to_hold_the_bloody_and_uniterable_HashMap_edges.containsKey(key1+"--"+key2) && NotDiscover_map.get(key2)){
             //System.out.println(key1+","+key2);
-            G_BFS.put(key1+"--"+key2, edges_counter);
+            G_BFS.put(key1+"--"+key2, map_to_hold_the_bloody_and_uniterable_HashMap_edges.get(key1+"--"+key2));
             NotDiscover_map.put(key2, false);
             layer_map.put(key2,l+1);
             Numero_Nodos_descubiertos=Numero_Nodos_descubiertos+1;
@@ -391,7 +437,7 @@ if(Dirigido){
       if(layer_map.get(key1)==l){
         for(String key2: another_map_to_hold_the_other_HashMap_nodes.keySet()){
           if(map_to_hold_the_bloody_and_uniterable_HashMap_edges.containsKey(key1+"->"+key2) && NotDiscover_map.get(key2)){
-            G_BFS.put(key1+"->"+key2, edges_counter);
+            G_BFS.put(key1+"->"+key2, map_to_hold_the_bloody_and_uniterable_HashMap_edges.get(key1+"->"+key2));
             NotDiscover_map.put(key2, false);
             layer_map.put(key2,l+1);
             Numero_Nodos_descubiertos=Numero_Nodos_descubiertos+1;
@@ -432,8 +478,7 @@ public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,Ha
   for(String key1: another_map_to_hold_the_other_HashMap_nodes.keySet()){
     NotDiscover_map.put(key1, true);
   }
-  
-  
+    
   NotDiscover_map.put("N"+Nodo_previo, false);
 
   stack.push("N"+Nodo_previo);
@@ -443,7 +488,7 @@ public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,Ha
     while(true){    
       for (String key1: another_map_to_hold_the_other_HashMap_nodes.keySet()){
         if(map_to_hold_the_bloody_and_uniterable_HashMap_edges.containsKey(key2+"->"+key1) && NotDiscover_map.get(key1)){
-          G_DFSi.put(key2+"->"+key1, 3);
+          G_DFSi.put(key2+"->"+key1, map_to_hold_the_bloody_and_uniterable_HashMap_edges.get(key2+"->"+key1));
           stack.push(key1);  
           NotDiscover_map.put(key1, false);          
         }      
@@ -461,7 +506,7 @@ public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,Ha
     while(true){    
       for (String key1: another_map_to_hold_the_other_HashMap_nodes.keySet()){
         if(map_to_hold_the_bloody_and_uniterable_HashMap_edges.containsKey(key2+"--"+key1) && NotDiscover_map.get(key1)){
-          G_DFSi.put(key2+"--"+key1, 3);
+          G_DFSi.put(key2+"--"+key1, map_to_hold_the_bloody_and_uniterable_HashMap_edges.get(key2+"--"+key1));
           stack.push(key1);  
           NotDiscover_map.put(key1, false);          
         }      
@@ -478,64 +523,106 @@ public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,Ha
   return G_DFSi;
 }
 
-
 //método para obtener DFS de forma recursiva
 
 public HashMap<String, Integer> graphToDFSr(HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
   HashMap<String,Integer> G_DFSr = new HashMap<String,Integer>();
-  Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges_plus_plus = new HashMap<String,Integer>(Graph_in);
+  HashMap<String,Integer> G_DFSrO = new HashMap<String,Integer>();
+  Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges = new HashMap<String,Integer>(Graph_in);
   Map<String,Double> another_map_to_hold_the_other_HashMap_nodes = new HashMap<String,Double>(Nodos_G_in);
   Map<String,Boolean> NotDiscover_map = new HashMap<String,Boolean>();
   Stack<String> stack = new Stack<String>();
 
-  int Nodo_previo=N_source;
-  int edges_counter=0;
+  String Nodo_previo="N"+N_source;
   int Numero_Nodos_descubiertos=1;
   int nodos_restantes;
   String key1;
   Boolean Dirigido=Dir;
 
-  //quiero recorrer la lista de nodos del grafo para ir buscando desde el nodo fuente u
-  //si existen las aristas (u,v) en el grafo e ir añadiendo los nodos al stack
-  //una vez descubiertos todos los nodos conectados con u llamar nuevamente a la función  
-  for(String key2: another_map_to_hold_the_other_HashMap_nodes.keySet()){
-    map_to_hold_the_bloody_and_uniterable_HashMap_edges_plus_plus.put(key2, 1);
+  for (String key: another_map_to_hold_the_other_HashMap_nodes.keySet()){
+    NotDiscover_map.put(key,true);
+    //System.out.println(key+"true");
   }
-  //pero la función debe devolver la lista de nodos descubiertos el stack para el orden
-  // de recorrido en el grafo y la lista de aristas del grafo DFS
-  // no se como return puede devolver mas de un elemento (HashMap, Stack, map y nuevo nodo previo )
-  // para poder realizar la recursividad.
-  key1="N"+Nodo_previo;
-  map_to_hold_the_bloody_and_uniterable_HashMap_edges_plus_plus.put(key1, 0);
-  
+
+  Small_DFS_recursive hero = new Small_DFS_recursive(map_to_hold_the_bloody_and_uniterable_HashMap_edges, G_DFSr, another_map_to_hold_the_other_HashMap_nodes, Nodo_previo, NotDiscover_map, stack);
+
+    hero.small_DFSr(Nodo_previo);  
+
+  System.out.println("imprimiendo salida de recursividad en atributo DFS");
+  /*
+  for(String keyO: hero. DFS_HM.keySet()){
+    System.out.println(keyO);
+  }
+  */
+  G_DFSrO.putAll(hero.DFS_HM);
   
 
-  return G_DFSr;
+  return G_DFSrO;
 }
-//Tambien intenté crear una clase para que los objetos tengan los 4 atributos que necesito
-//y con un metodo poder modificar éstos pero  
-static Map<String, Boolean> Small_DFS_recursive(Map<String,Integer> Map_edges, String v){
-  //HashMap para manipular el HashMap entrante dentro de la función recursiva
-  Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges_PP = new HashMap<String,Integer>();
-  
-  map_to_hold_the_bloody_and_uniterable_HashMap_edges_PP=Map_edges;
-  
-  String key1=v;
 
- 
-  for(String key2: map_to_hold_the_bloody_and_uniterable_HashMap_edges_PP.keySet()){
+//metodo Dijkstra
 
-    if(map_to_hold_the_bloody_and_uniterable_HashMap_edges_PP.containsKey(key1+"--"+key2)){
-      //si llamo a esta misma función debo entregarle el HashMap con las aristas, la lista con los 
-      //nodos visitados, otro HashMap con el DFS hasta el momento y el nodo fuente. Pero no se como 
-      //sacarlos de esta función para que loes entregue a si misma
+public Map<String,Double> getDijkstra(HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, String N_source,Boolean Dir){
+  Map<String,Integer> Graph = new HashMap<String,Integer>(Graph_in);
+  Map<String,Double> map_Distancia_Nodos_G = new HashMap<String,Double>(Nodos_G_in);
+  Map<String,Boolean> NotDiscover = new HashMap<String,Boolean>();
+  java.util.Queue<String>  q = new LinkedList<String>();
+
+  double inf=Double.POSITIVE_INFINITY;
+  int dist;
+  int dscntd=map_Distancia_Nodos_G.size();
+  int Total_nodos=map_Distancia_Nodos_G.size();
+  String key0=N_source;
+
+
+
+  for(String key1 : map_Distancia_Nodos_G.keySet()){
+    map_Distancia_Nodos_G.put(key1,inf);
+    NotDiscover.put(key1, true);
+  }
+  map_Distancia_Nodos_G.put(key0,0.0);
+  
+
+while(NotDiscover.containsValue(true)){
+    for(String key1 : map_Distancia_Nodos_G.keySet()){
+      if(Graph.containsKey(key0+"--"+key1) && NotDiscover.get(key1)){
+        int int_dist=map_Distancia_Nodos_G.get(key0).intValue();
+        dist=Graph.get(key0+"--"+key1)+int_dist;        
+        q.add(key1);
+        if(dist<map_Distancia_Nodos_G.get(key1)){
+          double d_dist= Double.valueOf(dist);
+          map_Distancia_Nodos_G.put(key1, d_dist);
+        }
+      }
     }
-  }
-
-  return Small_DFS_recursive(map_to_hold_the_bloody_and_uniterable_HashMap_edges_PP, key1);
+    NotDiscover.put(key0,false);
+    try{
+      key0=q.remove();
+      dscntd=dscntd-1;
+    }
+    catch(NoSuchElementException e) {
+      if(dscntd>0){System.out.println("Grafo desconectado");}
+      break;
+   }   
+  } 
+return map_Distancia_Nodos_G;
 }
 
 
+public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
+  
+  Map<String,Double> Graph_with_weight = new HashMap<>(Graph);
+  float mn=min;
+  float mx=max;
+  
+  for(String key0: Graph_with_weight.keySet()){
+    Double rnd_wgt=min+(max-min)*Math.random(); 
+    Graph_with_weight.put(key0,rnd_wgt);
+  }
+
+  return Graph_with_weight;
+
+}
   public static void main(final String[] args){
     // creacion de objetos de la clase Graph
     final Graph g1 = new Graph();
@@ -549,10 +636,9 @@ static Map<String, Boolean> Small_DFS_recursive(Map<String,Integer> Map_edges, S
     int m;
     //variable metodo Gilbert
     double p;
-    //variable metodo Geografica Simple
-    double r=0.08;
+
     //variable metodo Barabasi Albert
-    int D=5;
+    int D=25;
     //variable Dirigido
     Boolean d=false;
     //variable Autoconectado
@@ -560,98 +646,172 @@ static Map<String, Boolean> Small_DFS_recursive(Map<String,Integer> Map_edges, S
     //variable para el nodo fuente de metodos BFS
     int v_s=0;
     //objetos de la clase HashMap para guardar el regreso de los metodos
+    //de generación de grafos
+
     HashMap <String,Double> Nodes = new HashMap <String,Double>();
     HashMap <String,Integer> ErdRny = new HashMap <String,Integer>();
     HashMap <String,Integer> Gilbert = new HashMap <String,Integer>();
-    final HashMap <String,Integer> SimpleGeo = new HashMap <String,Integer>();
-    final HashMap <String,Integer> BarabasiAlbert = new HashMap <String,Integer>();
+    HashMap <String,Integer> SimpleGeo = new HashMap <String,Integer>();
+    HashMap <String,Integer> BarabasiAlbert = new HashMap <String,Integer>();
+
     HashMap <String,Integer> G_BFS = new HashMap <String,Integer>();
     HashMap <String,Integer> G_DFSi = new HashMap <String,Integer>();
     HashMap <String,Integer> G_DFSr = new HashMap <String,Integer>();
+    Map <String,Double> Dist_nodes = new HashMap<String,Double>();
 
-    final Scanner keyboard = new Scanner(System.in);
-/*
-    System.out.println("Numero de nodos");
-    n=keyboard.nextInt();
-/*
-    System.out.println("Numero de aristas ");
-    m=keyboard.nextInt();
+    Scanner keyboard = new Scanner(System.in);
 
-    System.out.println("Probabilidad para metodo Gilbert");
-    p=keyboard.nextDouble();
-/*
-    System.out.println("Radio de la vecindad para metodo Geografico simple");
-    r=keyboard.nextDouble();
-
-    System.out.println("Parametro d para metodo Barabasi Albert");
-    D=keyboard.nextInt();
-
-    System.out.println("Dirigido");
-    d=keyboard.nextBoolean();
-
-    System.out.println("Autoconectado");
-    a=keyboard.nextBoolean();
-/
-    System.out.println("nodo fuente ");
-    v_s=keyboard.nextInt();
-*/  n=100;
+    n=30;
     m=200;
-    p=0.8;
+    p=0.7;
     v_s=2;
     
     Nodes= g1.node(n);
     
 
-    //ErdRny=g1.genErdosRenyi(n,m,d,a);
+    ErdRny=g1.genErdosRenyi(n,m,d,a);
+    G_BFS=g1.graphToBFS(ErdRny,Nodes,v_s,d);
+    G_DFSi=g1.graphToDFSi(ErdRny,Nodes,v_s,d);
+    G_DFSr=g1.graphToDFSr(ErdRny, Nodes, v_s, d);
+    Dist_nodes=g1.getDijkstra(ErdRny, Nodes, "N4", d);
+
+    try {
+	    g1.toViz("ErdRny_n"+n+"_m"+m, d, ErdRny);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toViz("ErdRny_n"+n+"_m"+m+"BFS", d, G_BFS);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toViz("ErdRny_n"+n+"_m"+m+"DFSi", d, G_DFSi);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toViz("ErdRny_n"+n+"_m"+m+"DFSr", d, G_DFSr);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toVizDoub("ErdRny_n"+n+"_m"+m+"Dijk", d, Dist_nodes);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+  	}
+
+    Nodes= g2.node(n);
     Gilbert=g2.genGilbert(n,m,p,d,a);
     G_BFS=g2.graphToBFS(Gilbert,Nodes,v_s,d);
     G_DFSi=g2.graphToDFSi(Gilbert,Nodes,v_s,d);
-   /* 
-    SimpleGeo=g3.genSimpleGeo(n,r,d,a);
-    BarabasiAlbert=g4.genBarabasiAlbert(n,D,d,a);
+    G_DFSr=g2.graphToDFSr(Gilbert, Nodes, v_s, d);
+    Dist_nodes=g2.getDijkstra(Gilbert, Nodes, "N4", d);
 
-	try {
-	    g1.toViz("ErdRny_n"+n+"_m"+m, d, ErdRny);
-	}catch(IOException e) {
-	    System.out.println("An error occurred.");
-	    e.printStackTrace();
-	}
-*/
-	try {
-	    g1.toViz("Gilbert_n"+n+"_p"+p, d, Gilbert);
-	}catch(final IOException e) {
-	    System.out.println("An error occurred.");
+    try {g2.toViz("Gilbert_n"+n+"_p"+p, d, Gilbert);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
       e.printStackTrace();
-  }
-  
-  try {
-    g1.toViz("Gilbert_n"+n+"_p"+p+"BFS", d, G_BFS);
-  }catch(final IOException e) {
-    System.out.println("An error occurred.");
-    e.printStackTrace();
-  }
-  
-  try {
-  g1.toViz("Gilbert_n"+n+"_p"+p+"DFSi", d, G_DFSi);
-  }catch(final IOException e) {
-  System.out.println("An error occurred.");
-  e.printStackTrace();
-  }
-/*
-	try {
-	    g1.toViz("SimpleGeo_n"+n+"_r"+r, d, SimpleGeo);
-	}catch(IOException e) {
+    }
+    try {g2.toViz("Gilbert_n"+n+"_p"+p+"BFS", d, G_BFS);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    try {g2.toViz("Gilbert_n"+n+"_p"+p+"DFSi", d, G_DFSi);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    try {
+	    g1.toViz("Gilbert_n"+n+"_m"+m+"DFSr", d, G_DFSr);
+  	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-	}
+    }
+    try {g2.toVizDoub("Gilbert_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
 
-	try {
-	    g1.toViz("BarabasiAlbert_n"+n+"_d"+D, d, BarabasiAlbert);
-	}catch(IOException e) {
+    //variable metodo Geografica Simple
+    double r=0.08;
+
+    Nodes= g3.node(n);
+    SimpleGeo=g3.genSimpleGeo(n,r,d,a);
+    G_BFS=g3.graphToBFS(SimpleGeo,Nodes,v_s,d);
+    G_DFSi=g3.graphToDFSi(SimpleGeo,Nodes,v_s,d);
+    G_DFSr=g3.graphToDFSr(SimpleGeo, Nodes, v_s, d);
+    Dist_nodes=g3.getDijkstra(SimpleGeo, Nodes, "N4", d);
+    
+    try {g1.toViz("SimpleGeo_n"+n+"_r"+r, d, SimpleGeo);}
+    catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-	}
-*/
+  	}
+    try {g1.toViz("SimpleGeo_n"+n+"_r"+r+"BFS", d, G_BFS);}
+    catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {g1.toViz("SimpleGeo_n"+n+"_r"+r+"DFSi", d, G_DFSi);}
+    catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toViz("SimpleGeo_n"+n+"_m"+m+"DFSr", d, G_DFSr);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {g2.toVizDoub("SimpleGeo_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+
+    Nodes= g4.node(n);
+    BarabasiAlbert=g4.genBarabasiAlbert(n,D,d,a);
+    G_BFS=g4.graphToBFS(BarabasiAlbert,Nodes,v_s,d);
+    G_DFSi=g4.graphToDFSi(BarabasiAlbert,Nodes,v_s,d);
+    G_DFSr=g4.graphToDFSr(BarabasiAlbert, Nodes, v_s, d);
+    Dist_nodes=g4.getDijkstra(BarabasiAlbert, Nodes, "N4", d);
+
+
+    try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D, d, BarabasiAlbert);}
+    catch(IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D+"BFS", d, G_BFS);}
+    catch(IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D+"DFSi", d, G_DFSi);}
+    catch(IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+    try {
+	    g1.toViz("BarabasiAlbert_n"+n+"_m"+m+"DFSr", d, G_DFSr);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {g2.toVizDoub("BarabasiAlbert_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
+    catch(final IOException e) {
+      System.out.println("An error occurred.");
+      e.printStackTrace();
+    }
+
     keyboard.close();
   }
 }
