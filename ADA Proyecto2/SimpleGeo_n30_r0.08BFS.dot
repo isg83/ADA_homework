@@ -1,0 +1,3 @@
+Graph G {
+	N2--N4[weight=70];
+}

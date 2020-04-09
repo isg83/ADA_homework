@@ -1,0 +1,12 @@
+Graph G {
+	N15--N23[weight=9];
+	N8--N4[weight=94];
+	N2--N4[weight=70];
+	N5--N4[weight=24];
+	N22--N4[weight=82];
+	N11--N23[weight=92];
+	N29--N4[weight=87];
+	N27--N4[weight=77];
+	N9--N23[weight=73];
+	N16--N23[weight=38];
+}

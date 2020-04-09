@@ -1,0 +1,31 @@
+Graph G {
+	N14--N4[weight=1];
+	N2--N6[weight=1];
+	N14--N3[weight=1];
+	N14--N0[weight=1];
+	N19--N5[weight=1];
+	N26--N16[weight=1];
+	N14--N8[weight=1];
+	N14--N7[weight=1];
+	N7--N13[weight=1];
+	N2--N28[weight=1];
+	N14--N25[weight=1];
+	N2--N29[weight=1];
+	N19--N11[weight=1];
+	N14--N27[weight=1];
+	N17--N9[weight=1];
+	N16--N18[weight=1];
+	N2--N10[weight=1];
+	N2--N12[weight=1];
+	N2--N14[weight=1];
+	N11--N21[weight=1];
+	N14--N23[weight=1];
+	N17--N1[weight=1];
+	N17--N24[weight=1];
+	N17--N22[weight=1];
+	N19--N20[weight=1];
+	N14--N15[weight=1];
+	N11--N17[weight=1];
+	N14--N19[weight=1];
+	N19--N26[weight=1];
+}
