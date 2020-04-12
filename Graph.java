@@ -1,7 +1,9 @@
 import java.util.*;
+import java.util.stream.Collectors;
 //import sun.misc.Queue;
 import java.io.*;
 import java.nio.file.DirectoryIteratorException;
+import java.text.DecimalFormat;
 
 public class Graph{
 //metodo devuelve objeto HashMap con N nodos, argumento N
@@ -275,7 +277,8 @@ public class Graph{
   }
 
   // metodo para guardar la lista generada por los diferentes metodos en archivo
-  // .viz
+  // .dot en un principio generaba archivos viz pero gephi no los puede leer.
+  //mantengo el nombre pues es el indicado en las instrucciones dadas en clase.
   public void toViz(final String file_name, final Boolean d, final HashMap<String, Integer> Graph_method)
       throws IOException {
 
@@ -315,7 +318,7 @@ public class Graph{
   }
 
    // metodo para guardar la lista generada por los diferentes metodos en archivo
-  // .viz
+  // .dot para el caso donde el Map contiene double 
   public void toVizDoub(String file_name, Boolean d, Map<String, Double> Graph_method)
       throws IOException {
 
@@ -335,12 +338,14 @@ public class Graph{
       }
     });
     }
+DecimalFormat df = new DecimalFormat("#.00");
 
     if(!dir){
       writer.write("Graph G {\n");
       Graph_method.forEach((k, v) -> {
         try {
-          writer.write("\t" + k + "[weight=" + v + "];\n");
+          
+          writer.write("\t" + k + "\t [label="+ k +"(" + df.format(v) + ")];\n");
         } catch (final IOException e) {
           System.out.println("An error occurred.");
           e.printStackTrace();
@@ -351,24 +356,10 @@ public class Graph{
     writer.flush();
     writer.close();
   }
-//metodo para separar las llaves de las aristas de cada metodo
-//preservamos el primer nodo
-  public String unShambleFirst(String bloody_key){
-    String str = bloody_key;
-    String[] blStr = str.split("->", 2); 
-   
-    return blStr[0];
-  }
-
-  public String unShambleSecond(String bloody_key, Boolean Dir){
-    Boolean Dirigido=Dir;
-    String str = bloody_key;
-    String[] blStr = str.split("->", 2);
-
-    return blStr[1];
-  }
 
 //metodo BFS de forma iterativa.
+//en un principio no encontraba como iterar un Hashmap pues los ejemplos que buscaba siempre usaban a map 
+//en lugar de un Hashmap pero ya se que es posible. 
 
  public HashMap<String,Integer> graphToBFS(final HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
   HashMap<String,Integer> G_BFS = new HashMap<String,Integer>();
@@ -534,8 +525,6 @@ public HashMap<String, Integer> graphToDFSr(HashMap<String, Integer> Graph_in,Ha
   Stack<String> stack = new Stack<String>();
 
   String Nodo_previo="N"+N_source;
-  int Numero_Nodos_descubiertos=1;
-  int nodos_restantes;
   String key1;
   Boolean Dirigido=Dir;
 
@@ -548,7 +537,7 @@ public HashMap<String, Integer> graphToDFSr(HashMap<String, Integer> Graph_in,Ha
 
     hero.small_DFSr(Nodo_previo);  
 
-  System.out.println("imprimiendo salida de recursividad en atributo DFS");
+  //System.out.println("imprimiendo salida de recursividad en atributo DFS");
   /*
   for(String keyO: hero. DFS_HM.keySet()){
     System.out.println(keyO);
@@ -560,91 +549,119 @@ public HashMap<String, Integer> graphToDFSr(HashMap<String, Integer> Graph_in,Ha
   return G_DFSrO;
 }
 
+//metodo para ordenar map por valor
+
+public static Map<String,Double> sortByValue(final Map<String,Double> Dist_al_nodo){
+  return Dist_al_nodo.entrySet()
+          .stream()
+          .sorted((Map.Entry.<String, Double>comparingByValue()))
+          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1,e2) -> e1, LinkedHashMap::new));
+}
 //metodo Dijkstra
 
-public Map<String,Double> getDijkstra(HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, String N_source,Boolean Dir){
-  Map<String,Integer> Graph = new HashMap<String,Integer>(Graph_in);
+public Map<String,Double> getDijkstra(HashMap<String, Double> Graph_in,HashMap<String,Double> Nodos_G_in, String N_source,Boolean Dir){
+  Map<String,Double> Graph = new HashMap<String,Double>(Graph_in);
   Map<String,Double> map_Distancia_Nodos_G = new HashMap<String,Double>(Nodos_G_in);
-  Map<String,Boolean> NotDiscover = new HashMap<String,Boolean>();
-  java.util.Queue<String>  q = new LinkedList<String>();
+  Map<String,Double> order_by_dist_nodos_G = new HashMap<String,Double>();
+  Map<String,Boolean> InSetQ = new HashMap<String,Boolean>();
+  Map<String,String> prev = new HashMap<String,String>();
+  Map<String,Double> Graph_min =new HashMap<String,Double>();
+  List<String> removedList = new ArrayList<String>();
 
   double inf=Double.POSITIVE_INFINITY;
-  int dist;
-  int dscntd=map_Distancia_Nodos_G.size();
+  double dist;
+  int not_new_counter;
   int Total_nodos=map_Distancia_Nodos_G.size();
+  int j=0;
   String key0=N_source;
 
-
-
   for(String key1 : map_Distancia_Nodos_G.keySet()){
-    map_Distancia_Nodos_G.put(key1,inf);
-    NotDiscover.put(key1, true);
+    map_Distancia_Nodos_G.put(key1,inf);    
+    InSetQ.put(key1, true);
   }
   map_Distancia_Nodos_G.put(key0,0.0);
   
-
-while(NotDiscover.containsValue(true)){
+  not_new_counter=map_Distancia_Nodos_G.size();
+  while(InSetQ.containsValue(true)){
+    removedList.add(key0);
     for(String key1 : map_Distancia_Nodos_G.keySet()){
-      if(Graph.containsKey(key0+"--"+key1) && NotDiscover.get(key1)){
-        int int_dist=map_Distancia_Nodos_G.get(key0).intValue();
-        dist=Graph.get(key0+"--"+key1)+int_dist;        
-        q.add(key1);
-        if(dist<map_Distancia_Nodos_G.get(key1)){
-          double d_dist= Double.valueOf(dist);
-          map_Distancia_Nodos_G.put(key1, d_dist);
+      if(Graph.containsKey(key0+"--"+key1) && InSetQ.get( key0) && InSetQ.get(key1) ){
+        //System.out.println(key0+"--"+key1+","+InSetQ.get(key0));
+        dist=Graph.get(key0+"--"+key1)+map_Distancia_Nodos_G.get(key0);        
+                        
+        if(dist < map_Distancia_Nodos_G.get(key1)){
+          map_Distancia_Nodos_G.put(key1, dist);
+          //Graph_min.put(key0+"--"+key1,dist);
+          prev.put(key1, key0);
         }
       }
     }
-    NotDiscover.put(key0,false);
-    try{
-      key0=q.remove();
-      dscntd=dscntd-1;
+    InSetQ.put(key0,false);
+    
+    //se re obtiene los nodos totales ordenados de menor a mayor peso
+    order_by_dist_nodos_G=sortByValue(map_Distancia_Nodos_G);
+    /*    
+    for (String key2: order_by_dist_nodos_G.keySet()){
+      System.out.println(key2+","+order_by_dist_nodos_G.get(key2));
     }
-    catch(NoSuchElementException e) {
-      if(dscntd>0){System.out.println("Grafo desconectado");}
+    */
+        
+    for (int i=0; i < removedList.size(); i++){
+      j=i;
+      order_by_dist_nodos_G.remove(removedList.get(i));        
+    }
+   
+    try {
+      Map.Entry<String,Double> entry = order_by_dist_nodos_G.entrySet().stream().findFirst().get();
+      key0=entry.getKey();
+    } catch (Exception e) {
+      System.out.println("trataste de obtener elemento de map vacio");
       break;
-   }   
+    }
+
+    int temp= order_by_dist_nodos_G.size();    
+    if (not_new_counter==temp){
+      System.out.println("Grafo desconectado; al calcular Dijkstra");
+      break;
+    }
+    not_new_counter=temp;
   } 
-return map_Distancia_Nodos_G;
-}
-
-
-public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
-  
-  Map<String,Double> Graph_with_weight = new HashMap<>(Graph);
-  float mn=min;
-  float mx=max;
-  
-  for(String key0: Graph_with_weight.keySet()){
-    Double rnd_wgt=min+(max-min)*Math.random(); 
-    Graph_with_weight.put(key0,rnd_wgt);
+  for(String key3: prev.keySet()){    
+    Graph_min.put(prev.get(key3)+"--"+key3,map_Distancia_Nodos_G.get(key3));
   }
 
-  return Graph_with_weight;
-
+  for(String key4: map_Distancia_Nodos_G.keySet()){
+    Graph_min.put(key4,map_Distancia_Nodos_G.get(key4));
+  } 
+return Graph_min;
 }
-  public static void main(final String[] args){
+
+
+public HashMap<String, Double> RandomEdgeValues(HashMap<String, Integer> Graph_in, Double min, Double max){
+  
+  double mn=min;
+  double mx=max;
+  HashMap<String, Integer> Graph_to_hold = new HashMap<String, Integer>(Graph_in);
+  HashMap<String, Double> Graph_to_return = new HashMap<String, Double>();
+
+  for(String key0: Graph_to_hold.keySet()){
+    double rnd_wgt=mn+(mx-mn)*Math.random(); 
+    Graph_to_return.put(key0,rnd_wgt);
+    //System.out.println(key0+" peso "+rnd_wgt);
+  }
+
+  return Graph_to_return;
+}
+
+public static void main(final String[] args){
     // creacion de objetos de la clase Graph
     final Graph g1 = new Graph();
     final Graph g2 = new Graph();
     final Graph g3 = new Graph();
     final Graph g4 = new Graph();
 
-    //variable numero de nodos
-    int n=0;
-    //variable numero de aristas
-    int m;
-    //variable metodo Gilbert
-    double p;
+    
 
-    //variable metodo Barabasi Albert
-    int D=25;
-    //variable Dirigido
-    Boolean d=false;
-    //variable Autoconectado
-    Boolean a=false;
-    //variable para el nodo fuente de metodos BFS
-    int v_s=0;
     //objetos de la clase HashMap para guardar el regreso de los metodos
     //de generación de grafos
 
@@ -657,30 +674,37 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
     HashMap <String,Integer> G_BFS = new HashMap <String,Integer>();
     HashMap <String,Integer> G_DFSi = new HashMap <String,Integer>();
     HashMap <String,Integer> G_DFSr = new HashMap <String,Integer>();
+    HashMap <String,Double> W_graph = new HashMap <String,Double>();
     Map <String,Double> Dist_nodes = new HashMap<String,Double>();
 
     Scanner keyboard = new Scanner(System.in);
 
-    n=30;
-    m=200;
-    p=0.7;
-    v_s=2;
+    int n=500;         //variable numero de nodos
+    int m=2000;        //variable numero de aristas
+    double p=0.7;     //variable método Gilbert
+    int D=25;         //variable método Barabasi Albert
+    double r=0.28;    //variable método Geografica Simple
+    Boolean d=false;  //variable Dirigido
+    Boolean a=false;  //variable Autoconectado
+    int v_s=2;        //variable nodo fuente de metodos BFS
+    double min=3.0;   //variable mínimo valor aleatorio en aristas
+    double max=30.0;  //variable máximo valor aleatroio en aristas
     
-    Nodes= g1.node(n);
-    
+    Nodes= g1.node(n);                          //método generador de lista con n nodos     
 
-    ErdRny=g1.genErdosRenyi(n,m,d,a);
+    ErdRny=g1.genErdosRenyi(n,m,d,a);           
     G_BFS=g1.graphToBFS(ErdRny,Nodes,v_s,d);
     G_DFSi=g1.graphToDFSi(ErdRny,Nodes,v_s,d);
     G_DFSr=g1.graphToDFSr(ErdRny, Nodes, v_s, d);
-    Dist_nodes=g1.getDijkstra(ErdRny, Nodes, "N4", d);
+    W_graph=g1.RandomEdgeValues(ErdRny, min, max);
+    Dist_nodes=g1.getDijkstra(W_graph, Nodes, "N4", d);
 
     try {
 	    g1.toViz("ErdRny_n"+n+"_m"+m, d, ErdRny);
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }
+    }/*
     try {
 	    g1.toViz("ErdRny_n"+n+"_m"+m+"BFS", d, G_BFS);
   	}catch(IOException e) {
@@ -698,7 +722,7 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }
+    } */
     try {
 	    g1.toVizDoub("ErdRny_n"+n+"_m"+m+"Dijk", d, Dist_nodes);
   	}catch(IOException e) {
@@ -711,13 +735,14 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
     G_BFS=g2.graphToBFS(Gilbert,Nodes,v_s,d);
     G_DFSi=g2.graphToDFSi(Gilbert,Nodes,v_s,d);
     G_DFSr=g2.graphToDFSr(Gilbert, Nodes, v_s, d);
-    Dist_nodes=g2.getDijkstra(Gilbert, Nodes, "N4", d);
+    W_graph=g2.RandomEdgeValues(Gilbert, min, max);
+    Dist_nodes=g2.getDijkstra(W_graph, Nodes, "N4", d);
 
     try {g2.toViz("Gilbert_n"+n+"_p"+p, d, Gilbert);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
-    }
+    }/*
     try {g2.toViz("Gilbert_n"+n+"_p"+p+"BFS", d, G_BFS);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
@@ -733,28 +758,27 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }
+    }*/
     try {g2.toVizDoub("Gilbert_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
     }
 
-    //variable metodo Geografica Simple
-    double r=0.08;
 
     Nodes= g3.node(n);
     SimpleGeo=g3.genSimpleGeo(n,r,d,a);
     G_BFS=g3.graphToBFS(SimpleGeo,Nodes,v_s,d);
     G_DFSi=g3.graphToDFSi(SimpleGeo,Nodes,v_s,d);
     G_DFSr=g3.graphToDFSr(SimpleGeo, Nodes, v_s, d);
-    Dist_nodes=g3.getDijkstra(SimpleGeo, Nodes, "N4", d);
+    W_graph=g3.RandomEdgeValues(SimpleGeo, min, max);
+    Dist_nodes=g3.getDijkstra(W_graph, Nodes, "N4", d);
     
     try {g1.toViz("SimpleGeo_n"+n+"_r"+r, d, SimpleGeo);}
     catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-  	}
+  	}/*
     try {g1.toViz("SimpleGeo_n"+n+"_r"+r+"BFS", d, G_BFS);}
     catch(IOException e) {
 	    System.out.println("An error occurred.");
@@ -770,8 +794,8 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }
-    try {g2.toVizDoub("SimpleGeo_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
+    }*/
+    try {g2.toVizDoub("SimpleGeo_n"+n+"_r"+r+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
@@ -782,14 +806,15 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
     G_BFS=g4.graphToBFS(BarabasiAlbert,Nodes,v_s,d);
     G_DFSi=g4.graphToDFSi(BarabasiAlbert,Nodes,v_s,d);
     G_DFSr=g4.graphToDFSr(BarabasiAlbert, Nodes, v_s, d);
-    Dist_nodes=g4.getDijkstra(BarabasiAlbert, Nodes, "N4", d);
+    W_graph=g4.RandomEdgeValues(BarabasiAlbert, min, max);
+    Dist_nodes=g4.getDijkstra(W_graph, Nodes, "N4", d);
 
 
     try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D, d, BarabasiAlbert);}
     catch(IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
-    }
+    }/*
     try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D+"BFS", d, G_BFS);}
     catch(IOException e) {
       System.out.println("An error occurred.");
@@ -805,8 +830,8 @@ public Map<String,Double> RandomEdgeValues(HashMap Graph, float min, float max){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }
-    try {g2.toVizDoub("BarabasiAlbert_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
+    }*/
+    try {g2.toVizDoub("BarabasiAlbert_n"+n+"_D"+D+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
