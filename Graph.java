@@ -1,5 +1,9 @@
 import java.util.*;
 import java.util.stream.Collectors;
+
+import javax.swing.text.AbstractDocument.BranchElement;
+import javax.xml.soap.Node;
+
 //import sun.misc.Queue;
 import java.io.*;
 import java.nio.file.DirectoryIteratorException;
@@ -202,7 +206,7 @@ public class Graph{
   // la probabilidad p=1-deg(nodo)/d.
   public static HashMap<String, Integer> genBarabasiAlbert(final int n, final int D_p, final Boolean d,
       final Boolean a) {
-
+        
     final HashMap<String, Integer> G_BarabasiAlbert = new HashMap<String, Integer>();
     HashMap<String, Double> nodos = new HashMap<String, Double>();
 
@@ -282,6 +286,7 @@ public class Graph{
   public void toViz(final String file_name, final Boolean d, final HashMap<String, Integer> Graph_method)
       throws IOException {
 
+    System.out.println("Guardando datos en archivo dot");    
     final Boolean dir = d;
     final File file = new File(file_name + ".dot");
     file.createNewFile();
@@ -321,7 +326,7 @@ public class Graph{
   // .dot para el caso donde el Map contiene double 
   public void toVizDoub(String file_name, Boolean d, Map<String, Double> Graph_method)
       throws IOException {
-
+        System.out.println("Guardando datos en archvo dot"); 
     Boolean dir = d;
     File file = new File(file_name + ".dot");
     file.createNewFile();
@@ -361,7 +366,8 @@ DecimalFormat df = new DecimalFormat("#.00");
 //en un principio no encontraba como iterar un Hashmap pues los ejemplos que buscaba siempre usaban a map 
 //en lugar de un Hashmap pero ya se que es posible. 
 
- public HashMap<String,Integer> graphToBFS(final HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
+ public static HashMap<String,Integer> graphToBFS(final HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
+  //System.out.println("obteniendo BFS");
   HashMap<String,Integer> G_BFS = new HashMap<String,Integer>();
   Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges = new HashMap<String,Integer>(Graph_in);
   Map<String,Double> another_map_to_hold_the_other_HashMap_nodes = new HashMap<String,Double>(Nodos_G_in);
@@ -453,6 +459,7 @@ if(Dirigido){
 //Método para obtener el DFS de forma iterativa.
 
 public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
+  System.out.println("DFS iterativo");
   HashMap<String,Integer> G_DFSi = new HashMap<String,Integer>();
   Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges = new HashMap<String,Integer>(Graph_in);
   Map<String,Double> another_map_to_hold_the_other_HashMap_nodes = new HashMap<String,Double>(Nodos_G_in);
@@ -517,6 +524,7 @@ public HashMap<String, Integer> graphToDFSi(HashMap<String, Integer> Graph_in,Ha
 //método para obtener DFS de forma recursiva
 
 public HashMap<String, Integer> graphToDFSr(HashMap<String, Integer> Graph_in,HashMap<String,Double> Nodos_G_in, int N_source,Boolean Dir){
+  System.out.println("DFS recursivo");
   HashMap<String,Integer> G_DFSr = new HashMap<String,Integer>();
   HashMap<String,Integer> G_DFSrO = new HashMap<String,Integer>();
   Map<String,Integer> map_to_hold_the_bloody_and_uniterable_HashMap_edges = new HashMap<String,Integer>(Graph_in);
@@ -560,6 +568,7 @@ public static Map<String,Double> sortByValue(final Map<String,Double> Dist_al_no
 //metodo Dijkstra
 
 public Map<String,Double> getDijkstra(HashMap<String, Double> Graph_in,HashMap<String,Double> Nodos_G_in, String N_source,Boolean Dir){
+  System.out.println("Comenzando Dijkstra");
   Map<String,Double> Graph = new HashMap<String,Double>(Graph_in);
   Map<String,Double> map_Distancia_Nodos_G = new HashMap<String,Double>(Nodos_G_in);
   Map<String,Double> order_by_dist_nodos_G = new HashMap<String,Double>();
@@ -635,10 +644,11 @@ public Map<String,Double> getDijkstra(HashMap<String, Double> Graph_in,HashMap<S
   } 
 return Graph_min;
 }
-
+//método para dar valores aleatorios a las aristas de los grafos generados con Erdos, Gilbert, SimpleGeo 
+//y Barabasi. 
 
 public HashMap<String, Double> RandomEdgeValues(HashMap<String, Integer> Graph_in, Double min, Double max){
-  
+  System.out.println("Random Edge Values");
   double mn=min;
   double mx=max;
   HashMap<String, Integer> Graph_to_hold = new HashMap<String, Integer>(Graph_in);
@@ -653,15 +663,368 @@ public HashMap<String, Double> RandomEdgeValues(HashMap<String, Integer> Graph_i
   return Graph_to_return;
 }
 
+//método Kruskal 
+
+public Map<String,Double> getKruskal(HashMap<String, Double> Graph_in,HashMap<String,Double> Nodos_G_in, Boolean Dir){
+  System.out.println("Iniciando Kruskal directo");
+  Map<String,Double> Graph = new HashMap<String,Double>(Graph_in);
+  Map<String,Double> Nodos_G = new HashMap<String,Double>(Nodos_G_in);
+  Map<String,Double> order_by_dist_edges_G = new HashMap<String,Double>();
+  Map<String,Double> Graph_min =new HashMap<String,Double>();
+  //HashMap de listas para guardar todos los nodos 
+  HashMap<String,ArrayList<String>> node_list = new HashMap<>();
+  ArrayList<String> transition=new ArrayList<>();
+
+  int Total_nodos=Nodos_G.size();
+  boolean D=Dir;
+  Double weight=0.0;
+
+  //map de listas para cada nodo, conforme unamos otro nodo a
+  //los subarboles; estos se añaden a los conjuntos correspondientes  
+  for (int i=0;i<Total_nodos;i++){
+    node_list.put("N"+i, new ArrayList<String>());
+    node_list.get("N"+i).add("N"+i);
+  }
+  
+  //ordenamos el mapa con las aristas por peso creciente de estos
+  order_by_dist_edges_G=sortByValue(Graph);
+
+  if (D){
+    for(String keyE: order_by_dist_edges_G.keySet()){      
+      for(String key1: Nodos_G.keySet()){
+        for(String key2: Nodos_G.keySet()){
+          if (keyE.equals(key1+"->"+key2)){
+            Collections.sort(node_list.get(key1));
+            Collections.sort(node_list.get(key2));
+            Boolean isEqual=node_list.get(key1).equals(node_list.get(key2));
+            transition.clear();
+            if (!isEqual){   
+              transition.addAll(node_list.get(key1));
+              transition.addAll(node_list.get(key2));
+              Collections.sort(transition);
+              Iterator trans_iter = transition.iterator();
+              while(trans_iter.hasNext()){
+                String k_node=(String)trans_iter.next();                
+                node_list.get(k_node).clear();
+                node_list.get(k_node).addAll(transition);
+                //System.out.println(node_list.get(k_node));
+              } 
+              //System.out.println(key1+":"+node_list.get(key1)+","+key2+":"+node_list.get(key2));              
+              Graph_min.put(keyE,order_by_dist_edges_G.get(keyE));
+            }
+          }
+        }
+      }      
+    }
+  }
+
+  if (!D){
+    for(String keyE: order_by_dist_edges_G.keySet()){      
+      for(String key1: Nodos_G.keySet()){         
+        for(String key2: Nodos_G.keySet()){                   
+          if (keyE.equals(key1+"--"+key2)){
+            Collections.sort(node_list.get(key1));            
+            Collections.sort(node_list.get(key2));
+            Boolean isEqual=node_list.get(key1).equals(node_list.get(key2));
+            transition.clear();
+            if (!isEqual){   
+              transition.addAll(node_list.get(key1));
+              transition.addAll(node_list.get(key2));
+              Collections.sort(transition);
+              Iterator trans_iter = transition.iterator();
+              while(trans_iter.hasNext()){
+                String k_node=(String)trans_iter.next();                
+                node_list.get(k_node).clear();
+                node_list.get(k_node).addAll(transition);
+                //System.out.println(node_list.get(k_node));
+              } 
+              //System.out.println(key1+":"+node_list.get(key1)+","+key2+":"+node_list.get(key2));              
+              Graph_min.put(keyE,order_by_dist_edges_G.get(keyE));              
+            }
+          }
+        }
+      }      
+    }
+  }
+  for (String key: Graph_min.keySet()){
+    weight=weight+Graph_min.get(key);
+  }
+  System.out.println(weight);
+  return Graph_min;
+}
+//orden inverso
+public static Map<String,Double> sortByValueInverse(Map<String,Double> w_edges) {
+  return w_edges.entrySet()
+                .stream()
+                .sorted((Map.Entry.<String,Double> comparingByValue().reversed()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+}
+ 
+//metodo de conteo de nodos
+public static Integer numberNodesInG(Map<String,Integer> Graph,HashMap<String,Double>Nodos_G){
+  Map<String,Double> node_list =new HashMap<>();
+  Integer numberNodes=0;
+  for (String key1: Nodos_G.keySet()){
+    for (String key2: Nodos_G.keySet()){
+        if (Graph.containsKey(key1+"--"+key2)){
+          node_list.put(key1, 0.0);
+          node_list.put(key2, 0.0);
+        }
+        else if(Graph.containsKey(key1+"->"+key2)){
+          node_list.put(key1, 0.0);
+          node_list.put(key2, 0.0);
+        }
+    }
+  }
+  
+  return node_list.size();
+}
+
+//kruskal inverso
+
+public Map<String,Double> getKruskalInverse(HashMap<String,Double> Graph_in, HashMap<String,Integer> BFS, HashMap<String,Double> Nodos_G_in, Integer Node, Boolean Dir){
+  System.out.println("obteniendo Kruskal inverso");
+  HashMap<String,Integer> GraphInteger = new HashMap<String,Integer>();
+  Map<String,Double> Graph = new HashMap<String,Double>(Graph_in);
+  HashMap<String,Double> Nodos_G = new HashMap<String,Double>(Nodos_G_in);
+  Map<String,Integer> BFS_G = new HashMap<String,Integer>(BFS);
+  Map<String,Double> order_by_dist_edges_G = new HashMap<String,Double>();
+  Map<String,Double> Graph_min =new HashMap<String,Double>();
+  HashMap<String,Double> node_list = new HashMap<String, Double>();
+
+for(Map.Entry<String,Double> entry: Graph.entrySet()){
+  GraphInteger.put(entry.getKey(), entry.getValue().intValue());
+}
+
+  int Total_nodos=Nodos_G.size();
+  boolean D=Dir;
+  String key0="N"+Node;
+  Double weight=0.0;
+  Integer nnBFS=0;
+  Integer nnG=0;
+
+  //nnBFS contiene el número de nodos del grafo BFS; los conectados. Lo usaremos para
+  //saber si desconectamos al grafo Graph
+  nnBFS=numberNodesInG(BFS_G, Nodos_G);
+  //nnG=numberNodesInG(GraphInteger, Nodos_G);
+  //System.out.println("# nodos en BFS "+nnBFS+" # nodos en G"+nnG);
+  //lista de aristas ordenada por pesos de manera creciente. pero ahora vamos a tomar la 
+  //última entrada.
+  order_by_dist_edges_G=sortByValueInverse(Graph);
+
+
+  //variable para guardar la arista que vamos a probar si podemos remover.
+  String test="";
+  Double testValue=0.0;
+
+  if(!D){
+    while(order_by_dist_edges_G.size()>0){
+      //tomamos la primer arista de la lista ordenada de mayor a menor.
+      try {
+        Map.Entry<String,Double> entry = order_by_dist_edges_G.entrySet().stream().findFirst().get();
+        test=entry.getKey();
+        testValue=entry.getValue();
+      } catch (Exception e) {
+        System.out.println("trataste de obtener elemento de map vacio"); 
+        break;   
+      }
+      //System.out.println(test+","+order_by_dist_edges_G.get(test));
+      Graph.remove(test);
+      GraphInteger.remove(test);
+      BFS_G.clear();
+      BFS_G=graphToBFS(GraphInteger, Nodos_G, Node, D);
+      //nnG=numberNodesInG(GraphInteger, Nodos_G);
+      //System.out.println("# nodos en BFS "+nnBFS+" # nodos en G"+nnG);
+      //System.out.println(numberNodesInG(BFS_G, Nodos_G)+","+nnBFS);
+      if (!numberNodesInG(BFS_G, Nodos_G).equals(nnBFS)){
+        order_by_dist_edges_G.remove(test);
+        GraphInteger.put(test,1);
+        Graph.put(test,testValue);
+        //System.out.println(test+" desconecta");
+      }
+      else if(numberNodesInG(BFS_G, Nodos_G).equals(nnBFS)){
+        order_by_dist_edges_G.remove(test);
+        //System.out.println(test+" no pertence");
+      }
+    }
+  }
+  Graph_min=Graph;
+
+  return Graph_min;
+}
+
+//método Prim
+
+public Map<String,Double> getPrim(HashMap<String,Double> Graph_in,HashMap<String,Double> Nodos_G_in, Boolean Dir){
+  
+  Map<String,Double> Graph = new HashMap<String,Double>(Graph_in);
+  Map<String,Double> Nodos_G = new HashMap<String,Double>(Nodos_G_in); 
+  Map<String,Double> edges_for_node = new HashMap<String,Double>();
+  Map<String,Double> ordered_edges_for_node = new HashMap<String,Double>();
+  Map<String,Double> Graph_min =new HashMap<String,Double>();
+  Map<String,Boolean> blng_tree= new HashMap<String,Boolean>();
+
+  Double T_weight=0.0;
+  int Total_nodos=Nodos_G.size();
+  int rnd_start= Total_nodos * (int)Math.random();
+  String key0="N"+rnd_start;
+  String min_edg;
+  Boolean D=Dir;
+
+  //ningun nodo pertenece en un inicio
+  for (String key: Nodos_G.keySet()){
+    blng_tree.put(key,false);    
+  }
+  //el nodo aleatorio rnd start pertence al árbol
+  blng_tree.put(key0,true);
+  
+  //busqueda de todas las aristas con key0 de inicio
+
+  if(!D){
+    //buscar aristas conectadas a key0
+    for (String key: Nodos_G.keySet()){      
+      if(Graph.containsKey(key0+"--"+key)){
+        //si Graph contiene al arista añadimos a edges for node
+        edges_for_node.put(key0+"--"+key,Graph.get(key0+"--"+key));        
+      }
+    }
+    //ordenas aristas conectadas con key0 por pesos
+    ordered_edges_for_node=sortByValue(edges_for_node);
+    
+    try {
+      Map.Entry<String,Double> entry = ordered_edges_for_node.entrySet().stream().findFirst().get();
+      min_edg=entry.getKey();      
+    } catch (Exception e) {
+      System.out.println("Grafo desconectado en Prim");
+      return Graph_min;
+    }
+    
+    while(blng_tree.containsValue(false) && !edges_for_node.isEmpty()){
+      //buscamos cual es el nodo de llegade de min edge
+      for (String key1: Nodos_G.keySet()){
+        if (min_edg.equals(key0+"--"+key1) &&  !blng_tree.get(key1)){    
+          //añades el nodo al arbol 
+          blng_tree.put(key1,true);
+          //añado arista a árbol de expansión mínima
+          Graph_min.put(min_edg,Graph.get(min_edg));
+          //remuevo la arista minima de ordered 
+          edges_for_node.remove(min_edg);
+          //busco todos las aristas conectadas al nodo recien añadido        
+          //añadimos nuevas aristas a lista de aristas que conectan al arbol
+          for (String key2: Nodos_G.keySet()){
+            if (Graph.containsKey(key1+"--"+key2) && !blng_tree.get(key2)){
+              edges_for_node.put(key1+"--"+key2,Graph.get(key1+"--"+key2));
+            }
+          }          
+          ordered_edges_for_node.clear();
+          ordered_edges_for_node=sortByValue(edges_for_node);     
+          break;
+        }
+        else{
+          edges_for_node.remove(min_edg);
+          ordered_edges_for_node.clear();
+          ordered_edges_for_node=sortByValue(edges_for_node);   
+        }
+      }
+      //System.out.println(java.time.LocalTime.now());
+
+      try {
+        Map.Entry<String,Double> entry = ordered_edges_for_node.entrySet().stream().findFirst().get();
+        min_edg=entry.getKey();      
+      } catch (Exception e) {
+        System.out.println("Grafo desconectado en Prim");
+        break;        
+      }  
+      for (String key1: Nodos_G.keySet()){
+        for (String key2: Nodos_G.keySet()){
+          if (min_edg.equals(key1+"--"+key2)){
+            key0=key1;             
+          }
+        }
+      }  
+    }
+  }
+
+  if(D){
+    //buscar aristas conectadas a key0
+    for (String key: Nodos_G.keySet()){      
+      if(Graph.containsKey(key0+"->"+key)){
+        //si Graph contiene al arista añadimos a edges for node
+        edges_for_node.put(key0+"->"+key,Graph.get(key0+"->"+key));        
+      }
+    }
+    //ordenas aristas conectadas con key0 por pesos
+    ordered_edges_for_node=sortByValue(edges_for_node);
+    
+    try {
+      Map.Entry<String,Double> entry = ordered_edges_for_node.entrySet().stream().findFirst().get();
+      min_edg=entry.getKey();      
+    } catch (Exception e) {
+      System.out.println("Grafo desconectado en Prim");
+      return Graph_min;
+    }
+    
+    while(blng_tree.containsValue(false) && !edges_for_node.isEmpty()){
+      //buscamos cual es el nodo de llegade de min edge
+      for (String key1: Nodos_G.keySet()){
+        if (min_edg.equals(key0+"->"+key1) &&  !blng_tree.get(key1)){        
+          //añades el nodo al arbol 
+          blng_tree.put(key1,true);
+          //añado arista a árbol de expansión mínima
+          Graph_min.put(min_edg,Graph.get(min_edg));
+          //remuevo la arista minima de ordered 
+          edges_for_node.remove(min_edg);
+          //busco todos las aristas conectadas al nodo recien añadido        
+          //añadimos nuevas aristas a lista de aristas que conectan al arbol
+          for (String key2: Nodos_G.keySet()){
+            if (Graph.containsKey(key1+"->"+key2) && !blng_tree.get(key2)){
+              edges_for_node.put(key1+"->"+key2,Graph.get(key1+"->"+key2));
+            }
+          }          
+          ordered_edges_for_node.clear();
+          ordered_edges_for_node=sortByValue(edges_for_node);     
+          break;
+        }
+        else{
+          edges_for_node.remove(min_edg);
+          ordered_edges_for_node.clear();
+          ordered_edges_for_node=sortByValue(edges_for_node);   
+        }
+      }
+      //System.out.println(java.time.LocalTime.now());
+
+      try {
+        Map.Entry<String,Double> entry = ordered_edges_for_node.entrySet().stream().findFirst().get();
+        min_edg=entry.getKey();      
+      } catch (Exception e) {
+        System.out.println("Grafo desconectado en Prim");
+        break;        
+      }  
+      for (String key1: Nodos_G.keySet()){
+        for (String key2: Nodos_G.keySet()){
+          if (min_edg.equals(key1+"->"+key2)){
+            key0=key1;             
+          }
+        }
+      }  
+    }
+  }
+  Double weight=0.0;
+  for (String key: Graph_min.keySet()){
+    weight=weight+Graph_min.get(key);
+  }
+  System.out.println(weight);
+  return Graph_min;
+}
+
 public static void main(final String[] args){
     // creacion de objetos de la clase Graph
     final Graph g1 = new Graph();
     final Graph g2 = new Graph();
     final Graph g3 = new Graph();
     final Graph g4 = new Graph();
-
     
-
     //objetos de la clase HashMap para guardar el regreso de los metodos
     //de generación de grafos
 
@@ -676,28 +1039,36 @@ public static void main(final String[] args){
     HashMap <String,Integer> G_DFSr = new HashMap <String,Integer>();
     HashMap <String,Double> W_graph = new HashMap <String,Double>();
     Map <String,Double> Dist_nodes = new HashMap<String,Double>();
+    Map <String,Double> Kruskal = new HashMap<String,Double>();
+    Map <String,Double> Prim =new HashMap<String,Double>();
+    Map <String,Double> Kruskal_inv = new HashMap<String,Double>();
 
     Scanner keyboard = new Scanner(System.in);
 
-    int n=500;         //variable numero de nodos
-    int m=2000;        //variable numero de aristas
-    double p=0.7;     //variable método Gilbert
+    int n=30;         //variable numero de nodos
+    int m=700;        //variable numero de aristas
+    double p=0.8;     //variable método Gilbert
     int D=25;         //variable método Barabasi Albert
-    double r=0.28;    //variable método Geografica Simple
+    double r=0.48;    //variable método Geografica Simple
     Boolean d=false;  //variable Dirigido
     Boolean a=false;  //variable Autoconectado
     int v_s=2;        //variable nodo fuente de metodos BFS
+    
     double min=3.0;   //variable mínimo valor aleatorio en aristas
     double max=30.0;  //variable máximo valor aleatroio en aristas
     
     Nodes= g1.node(n);                          //método generador de lista con n nodos     
 
+    System.out.println("Erdos Reny");
     ErdRny=g1.genErdosRenyi(n,m,d,a);           
     G_BFS=g1.graphToBFS(ErdRny,Nodes,v_s,d);
-    G_DFSi=g1.graphToDFSi(ErdRny,Nodes,v_s,d);
-    G_DFSr=g1.graphToDFSr(ErdRny, Nodes, v_s, d);
+    //G_DFSi=g1.graphToDFSi(ErdRny,Nodes,v_s,d);
+    //G_DFSr=g1.graphToDFSr(ErdRny, Nodes, v_s, d);
     W_graph=g1.RandomEdgeValues(ErdRny, min, max);
-    Dist_nodes=g1.getDijkstra(W_graph, Nodes, "N4", d);
+    //Dist_nodes=g1.getDijkstra(W_graph, Nodes, "N4", d);
+    //Kruskal=g1.getKruskal(W_graph, Nodes, d);
+    //Prim=g1.getPrim(W_graph, Nodes, d);
+    Kruskal_inv=g1.getKruskalInverse(W_graph, G_BFS, Nodes, v_s, d);
 
     try {
 	    g1.toViz("ErdRny_n"+n+"_m"+m, d, ErdRny);
@@ -722,21 +1093,44 @@ public static void main(final String[] args){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    } */
+    } 
     try {
 	    g1.toVizDoub("ErdRny_n"+n+"_m"+m+"Dijk", d, Dist_nodes);
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-  	}
+    }
+    try {
+	    g1.toVizDoub("ErdRny_n"+n+"_m"+m+"Krusk", d, Kruskal);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }
+    try {
+	    g1.toVizDoub("ErdRny_n"+n+"_m"+m+"Prim", d, Prim);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }*/
+    try {
+      g1.toVizDoub("ErdRny_n"+n+"_m"+m+"KruskInv",d,Kruskal_inv);
+    }catch(IOException e){
+      System.out.println();
+      e.printStackTrace();
+    }
 
+    System.out.println("Gilbert");
     Nodes= g2.node(n);
     Gilbert=g2.genGilbert(n,m,p,d,a);
     G_BFS=g2.graphToBFS(Gilbert,Nodes,v_s,d);
-    G_DFSi=g2.graphToDFSi(Gilbert,Nodes,v_s,d);
-    G_DFSr=g2.graphToDFSr(Gilbert, Nodes, v_s, d);
+    //G_DFSi=g2.graphToDFSi(Gilbert,Nodes,v_s,d);
+    //G_DFSr=g2.graphToDFSr(Gilbert, Nodes, v_s, d);
     W_graph=g2.RandomEdgeValues(Gilbert, min, max);
-    Dist_nodes=g2.getDijkstra(W_graph, Nodes, "N4", d);
+    //Dist_nodes=g2.getDijkstra(W_graph, Nodes, "N4", d);
+    //Kruskal=g2.getKruskal(W_graph, Nodes, d);
+    //Prim=g2.getPrim(W_graph, Nodes, d);
+    Kruskal_inv=g1.getKruskalInverse(W_graph, G_BFS, Nodes, v_s, d);
+
 
     try {g2.toViz("Gilbert_n"+n+"_p"+p, d, Gilbert);}
     catch(final IOException e) {
@@ -758,22 +1152,45 @@ public static void main(final String[] args){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }*/
+    }
     try {g2.toVizDoub("Gilbert_n"+n+"_p"+p+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
+    }                                                                                                                                                 
+    try {
+	    g1.toVizDoub("Gilbert_n"+n+"_p"+p+"Krusk", d, Kruskal);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();                                                                                   
+    }*//*
+    try {
+	    g1.toVizDoub("Gilbert_n"+n+"_p"+p+"Prim", d, Prim);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+  	}*/
+    try {
+      g1.toVizDoub("Gilbert_n"+n+"_p"+p+"KruskInv",d,Kruskal_inv);
+    }catch(IOException e){
+      System.out.println();
+      e.printStackTrace();
     }
 
 
+    System.out.println("Geométrico Simple");
     Nodes= g3.node(n);
     SimpleGeo=g3.genSimpleGeo(n,r,d,a);
     G_BFS=g3.graphToBFS(SimpleGeo,Nodes,v_s,d);
-    G_DFSi=g3.graphToDFSi(SimpleGeo,Nodes,v_s,d);
-    G_DFSr=g3.graphToDFSr(SimpleGeo, Nodes, v_s, d);
+    //G_DFSi=g3.graphToDFSi(SimpleGeo,Nodes,v_s,d);
+    //G_DFSr=g3.graphToDFSr(SimpleGeo, Nodes, v_s, d);
     W_graph=g3.RandomEdgeValues(SimpleGeo, min, max);
-    Dist_nodes=g3.getDijkstra(W_graph, Nodes, "N4", d);
-    
+    //Dist_nodes=g3.getDijkstra(W_graph, Nodes, "N4", d);
+    //Kruskal=g3.getKruskal(W_graph, Nodes, d);
+    //Prim=g3.getPrim(W_graph, Nodes, d);
+    Kruskal_inv=g1.getKruskalInverse(W_graph, G_BFS, Nodes, v_s, d);
+
+
     try {g1.toViz("SimpleGeo_n"+n+"_r"+r, d, SimpleGeo);}
     catch(IOException e) {
 	    System.out.println("An error occurred.");
@@ -794,20 +1211,42 @@ public static void main(final String[] args){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }*/
+    }
     try {g2.toVizDoub("SimpleGeo_n"+n+"_r"+r+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
     }
+    try {
+	    g1.toVizDoub("SimpleGeo_n"+n+"_r"+r+"Krusk", d, Kruskal);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }*//*
+    try {
+	    g1.toVizDoub("SimpleGeo_n"+n+"_r"+r+"Prim", d, Prim);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }*/
+    try {
+      g1.toVizDoub("SimpleGeo_n"+n+"_r"+r+"KruskInv",d,Kruskal_inv);
+    }catch(IOException e){
+      System.out.println();
+      e.printStackTrace();
+    }
 
+    System.out.println("Barabasi Albert");
     Nodes= g4.node(n);
     BarabasiAlbert=g4.genBarabasiAlbert(n,D,d,a);
     G_BFS=g4.graphToBFS(BarabasiAlbert,Nodes,v_s,d);
-    G_DFSi=g4.graphToDFSi(BarabasiAlbert,Nodes,v_s,d);
-    G_DFSr=g4.graphToDFSr(BarabasiAlbert, Nodes, v_s, d);
+    //G_DFSi=g4.graphToDFSi(BarabasiAlbert,Nodes,v_s,d);
+    //G_DFSr=g4.graphToDFSr(BarabasiAlbert, Nodes, v_s, d);
     W_graph=g4.RandomEdgeValues(BarabasiAlbert, min, max);
-    Dist_nodes=g4.getDijkstra(W_graph, Nodes, "N4", d);
+    //Dist_nodes=g4.getDijkstra(W_graph, Nodes, "N4", d);
+    //Kruskal=g4.getKruskal(W_graph, Nodes, d);
+    //Prim=g4.getPrim(W_graph, Nodes, d);
+    Kruskal_inv=g1.getKruskalInverse(W_graph, G_BFS, Nodes, v_s, d);
 
 
     try {g1.toViz("BarabasiAlbert_n"+n+"_d"+D, d, BarabasiAlbert);}
@@ -830,13 +1269,30 @@ public static void main(final String[] args){
   	}catch(IOException e) {
 	    System.out.println("An error occurred.");
 	    e.printStackTrace();
-    }*/
+    }
     try {g2.toVizDoub("BarabasiAlbert_n"+n+"_D"+D+"Dijk", d, Dist_nodes);}
     catch(final IOException e) {
       System.out.println("An error occurred.");
       e.printStackTrace();
     }
-
+    try {
+	    g1.toVizDoub("BarabasiAlbert_n"+n+"_D"+D+"Krusk", d, Kruskal);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    } *//*
+    try {
+	    g1.toVizDoub("BarabasiAlbert_n"+n+"_D"+D+"Prim", d, Prim);
+  	}catch(IOException e) {
+	    System.out.println("An error occurred.");
+	    e.printStackTrace();
+    }*/
+    try {
+      g1.toVizDoub("BarabasiAlbert_n"+n+"_D"+D+"KruskInv",d,Kruskal_inv);
+    }catch(IOException e){
+      System.out.println();
+      e.printStackTrace();
+    }
     keyboard.close();
   }
 }
